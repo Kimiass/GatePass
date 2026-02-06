@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد حراست - 360GatePass</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                        style="color:#86B0BD; vertical-align:-5px; margin-right:6px;">
+                        <path
+                            d="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3" />
+                        <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                        <path d="M9 17v-2a2 2 0 0 0-4 0v2" />
+                        <rect width="9" height="6" x="3" y="17" rx="1" />
+                    </svg>
+
+                    <span>
+                        <span style="color:#86B0BD;">360</span><span style="color:#E2A16F;">GatePass</span>
+                    </span>
+                </a>
+
+                <div class="user-info">
+                    <span id="user-name" class="user-name"></span>
+                    <span id="user-role" class="user-role"></span>
+                    <button id="logout-btn" class="btn btn-sm btn-outline">خروج</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <h2 class="mb-3">داشبورد حراست</h2>
+
+            <!-- Stats -->
+            <div class="grid grid-2 mb-4">
+                <div class="stat-card warning">
+                    <div class="stat-number" id="stat-pending">0</div>
+                    <div class="stat-label">در انتظار صدور مجوز</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-number" id="stat-present">0</div>
+                    <div class="stat-label">افراد حاضر در محل</div>
+                </div>
+            </div>
+
+            <!-- Check-in Form -->
+            <div class="card mb-4">
+                <h3 class="card-title">ثبت ورود</h3>
+                <form id="checkin-form" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label for="checkin-pass-code" class="form-label">کد مجوز</label>
+                        <input type="text" id="checkin-pass-code" class="form-input"
+                            placeholder="کد مجوز را وارد کنید (مثال: A1B2C3D4)"
+                            style="font-family: 'Courier New', monospace; font-size: 1.25rem; text-transform: uppercase;"
+                            required>
+                    </div>
+                    <button type="submit" class="btn btn-success">ثبت ورود</button>
+                </form>
+            </div>
+
+            <div class="grid grid-2 gap-3">
+                <!-- Pending Approvals -->
+                <div class="card">
+                    <h3 class="card-title">درخواست‌های در انتظار صدور مجوز</h3>
+                    <div class="table-wrapper">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>شناسه</th>
+                                    <th>مهمان</th>
+                                    <th>تلفن</th>
+                                    <th>میزبان</th>
+                                    <th>تاریخ</th>
+                                    <th>هدف</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visits-tbody">
+                                <tr>
+                                    <td colspan="7" class="text-center">در حال بارگذاری...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Present Visitors -->
+                <div class="card">
+                    <h3 class="card-title">افراد حاضر در محل</h3>
+                    <div class="table-wrapper">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>نام</th>
+                                    <th>تلفن</th>
+                                    <th>میزبان</th>
+                                    <th>زمان ورود</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="present-tbody">
+                                <tr>
+                                    <td colspan="5" class="text-center">در حال بارگذاری...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Issue Pass Modal -->
+    <div id="issue-pass-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">صدور مجوز ورود</h3>
+                <button class="modal-close" onclick="closeModal('issue-pass-modal')">×</button>
+            </div>
+            <form id="issue-pass-form">
+                <input type="hidden" id="issue-visit-id">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        با صدور مجوز، یک کد یکتا برای این درخواست ایجاد می‌شود که مهمان می‌تواند از آن برای ورود استفاده
+                        کند.
+                    </div>
+                    <div class="form-group">
+                        <label for="valid-hours" class="form-label">مدت اعتبار مجوز (ساعت)</label>
+                        <input type="number" id="valid-hours" class="form-input" value="24" min="1" max="168" required>
+                        <small class="form-help">مجوز برای چند ساعت معتبر باشد؟</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline"
+                        onclick="closeModal('issue-pass-modal')">انصراف</button>
+                    <button type="submit" class="btn btn-primary">صدور مجوز</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pass Code Display Modal -->
+    <div id="pass-code-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">مجوز صادر شد</h3>
+                <button class="modal-close" onclick="closeModal('pass-code-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success">
+                    مجوز با موفقیت صادر شد. کد مجوز را به مهمان اطلاع دهید.
+                </div>
+                <div class="pass-code-display">
+                    <div class="pass-code-label">کد مجوز</div>
+                    <div class="pass-code-value" id="display-pass-code">--------</div>
+                </div>
+                <p class="text-center" style="color: #5a6c7d;">
+                    مهمان باید این کد را هنگام ورود ارائه دهد
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('pass-code-modal')">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visit Details Modal -->
+    <div id="visit-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">جزئیات درخواست</h3>
+                <button class="modal-close" onclick="closeModal('visit-details-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="info-label">شناسه:</span>
+                        <span class="info-value" id="detail-id"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">مهمان:</span>
+                        <span class="info-value" id="detail-guest"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">ایمیل:</span>
+                        <span class="info-value" id="detail-guest-email"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">تلفن:</span>
+                        <span class="info-value" id="detail-guest-phone"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">میزبان:</span>
+                        <span class="info-value" id="detail-host"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">تاریخ ورود:</span>
+                        <span class="info-value" id="detail-date"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">وضعیت:</span>
+                        <span class="info-value" id="detail-status"></span>
+                    </li>
+                </ul>
+
+                <div class="form-group">
+                    <label class="form-label">هدف از ورود:</label>
+                    <p id="detail-purpose" style="color: #5a6c7d;"></p>
+                </div>
+
+                <div id="detail-history"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('visit-details-modal')">بستن</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

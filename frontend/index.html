@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360GatePass - سامانه مدیریت درخواست ورود</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                        style="color:#86B0BD; vertical-align:-6px;">
+                        <path
+                            d="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3" />
+                        <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                        <path d="M9 17v-2a2 2 0 0 0-4 0v2" />
+                        <rect width="9" height="6" x="3" y="17" rx="1" />
+                    </svg>
+
+                    <span style="color: #86B0BD;">360</span><span style="color: #E2A16F;">GatePass</span>
+                </h1>
+
+                <p>سامانه مدیریت درخواست ورود و تردد</p>
+            </div>
+
+            <div style="text-align: center; margin: 2rem 0;">
+                <p style="color: #5a6c7d; margin-bottom: 2rem;">
+                    خوش آمدید! لطفاً برای ادامه وارد سیستم شوید
+                </p>
+                <a href="pages/login.html" class="btn btn-primary btn-lg btn-block mb-2">
+                    ورود به سیستم
+                </a>
+                <a href="pages/register.html" class="btn btn-outline btn-lg btn-block">
+                    ثبت نام
+                </a>
+            </div>
+
+            <div style="background-color: #FFF0DD; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; color: #2c3e50;">امکانات سیستم:</h3>
+                <ul style="list-style: none; color: #5a6c7d; line-height: 2;">
+                    <li>✓ ثبت درخواست ورود آنلاین</li>
+                    <li>✓ تأیید و بررسی درخواست‌ها</li>
+                    <li>✓ صدور مجوز الکترونیکی</li>
+                    <li>✓ ثبت ورود و خروج</li>
+                    <li>✓ پیگیری وضعیت درخواست</li>
+                    <li>✓ گزارش‌گیری جامع</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        // Redirect if already logged in
+        if (isAuthenticated()) {
+            const user = getUserInfo();
+            if (user) {
+                redirectToDashboard(user.role);
+            }
+        }
+    </script>
+</body>
+
+</html>

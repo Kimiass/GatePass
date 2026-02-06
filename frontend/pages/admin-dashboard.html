@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد مدیریت - 360GatePass</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                        style="color:#86B0BD; vertical-align:-5px; margin-right:6px;">
+                        <path
+                            d="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3" />
+                        <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                        <path d="M9 17v-2a2 2 0 0 0-4 0v2" />
+                        <rect width="9" height="6" x="3" y="17" rx="1" />
+                    </svg>
+
+                    <span>
+                        <span style="color:#86B0BD;">360</span><span style="color:#E2A16F;">GatePass</span>
+                    </span>
+                </a>
+
+                <div class="user-info">
+                    <span id="user-name" class="user-name"></span>
+                    <span id="user-role" class="user-role"></span>
+                    <button id="logout-btn" class="btn btn-sm btn-outline">خروج</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <h2 class="mb-3">داشبورد مدیریت</h2>
+
+            <!-- User Management Section -->
+            <div class="card mb-4">
+                <h3 class="card-title">مدیریت کاربران</h3>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>شناسه</th>
+                                <th>نام</th>
+                                <th>ایمیل</th>
+                                <th>تلفن</th>
+                                <th>نقش</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center">در حال بارگذاری...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">گزارش‌ها و آمار</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="date" id="report-date-from" class="form-input" style="width: auto;">
+                        <input type="date" id="report-date-to" class="form-input" style="width: auto;">
+                        <button class="btn btn-primary btn-sm" onclick="applyReportFilters()">اعمال</button>
+                        <button class="btn btn-outline btn-sm" onclick="clearReportFilters()">پاک کردن</button>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="grid grid-4 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-total-visits">0</div>
+                        <div class="stat-label">کل درخواست‌ها</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-number" id="stat-pending">0</div>
+                        <div class="stat-label">در انتظار</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-number" id="stat-approved">0</div>
+                        <div class="stat-label">تأیید شده</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-number" id="stat-rejected">0</div>
+                        <div class="stat-label">رد شده</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-completed">0</div>
+                        <div class="stat-label">تکمیل شده</div>
+                    </div>
+                </div>
+
+                <!-- Daily Stats -->
+                <div id="daily-stats" class="mb-4"></div>
+
+                <!-- Recent Visits -->
+                <div id="recent-visits"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Change Role Modal -->
+    <div id="change-role-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">تغییر نقش کاربر</h3>
+                <button class="modal-close" onclick="closeModal('change-role-modal')">×</button>
+            </div>
+            <form id="change-role-form">
+                <input type="hidden" id="change-user-id">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>توجه:</strong> تغییر نقش کاربر بر دسترسی‌های او تأثیر می‌گذارد.
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">کاربر:</label>
+                        <p id="change-user-name" style="font-weight: 600; color: #2c3e50;"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-role" class="form-label">نقش جدید</label>
+                        <select id="new-role" class="form-select" required>
+                            <option value="guest">مهمان</option>
+                            <option value="host">میزبان</option>
+                            <option value="security">حراست</option>
+                            <option value="admin">مدیر سیستم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline"
+                        onclick="closeModal('change-role-modal')">انصراف</button>
+                    <button type="submit" class="btn btn-primary">تغییر نقش</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

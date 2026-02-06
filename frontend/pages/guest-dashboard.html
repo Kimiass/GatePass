@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد مهمان - 360GatePass</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                        style="color:#86B0BD; vertical-align:-5px; margin-right:6px;">
+                        <path
+                            d="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3" />
+                        <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                        <path d="M9 17v-2a2 2 0 0 0-4 0v2" />
+                        <rect width="9" height="6" x="3" y="17" rx="1" />
+                    </svg>
+
+                    <span>
+                        <span style="color:#86B0BD;">360</span><span style="color:#E2A16F;">GatePass</span>
+                    </span>
+                </a>
+
+                <div class="user-info">
+                    <span id="user-name" class="user-name"></span>
+                    <span id="user-role" class="user-role"></span>
+                    <button id="logout-btn" class="btn btn-sm btn-outline">خروج</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="card-header">
+                <h2 class="card-title">داشبورد مهمان</h2>
+                <button class="btn btn-primary" onclick="openModal('create-visit-modal')">
+                    + ثبت درخواست جدید
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-4 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">کل درخواست‌ها</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number" id="stat-pending">0</div>
+                    <div class="stat-label">در انتظار بررسی</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-number" id="stat-approved">0</div>
+                    <div class="stat-label">تأیید شده</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-completed">0</div>
+                    <div class="stat-label">تکمیل شده</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-bar">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="form-label">وضعیت</label>
+                        <select id="filter-status" class="form-select">
+                            <option value="">همه</option>
+                            <option value="pending_host">در انتظار میزبان</option>
+                            <option value="pending_security">در انتظار حراست</option>
+                            <option value="approved">تأیید شده</option>
+                            <option value="rejected_by_host">رد شده</option>
+                            <option value="completed">تکمیل شده</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">از تاریخ</label>
+                        <input type="date" id="filter-date-from" class="form-input">
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">تا تاریخ</label>
+                        <input type="date" id="filter-date-to" class="form-input">
+                    </div>
+                    <div class="filter-group" style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                        <button class="btn btn-primary" onclick="applyFilters()">اعمال</button>
+                        <button class="btn btn-outline" onclick="clearFilters()">پاک کردن</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visits Table -->
+            <div class="card">
+                <h3 class="card-title">درخواست‌های من</h3>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>شناسه</th>
+                                <th>میزبان</th>
+                                <th>تاریخ ورود</th>
+                                <th>وضعیت</th>
+                                <th>هدف</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visits-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center">در حال بارگذاری...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Visit Modal -->
+    <div id="create-visit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">ثبت درخواست ورود جدید</h3>
+                <button class="modal-close" onclick="closeModal('create-visit-modal')">×</button>
+            </div>
+            <form id="create-visit-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="host-select" class="form-label">میزبان</label>
+                        <select id="host-select" class="form-select" required>
+                            <option value="">در حال بارگذاری...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="visit-date" class="form-label">تاریخ ورود</label>
+                        <input type="date" id="visit-date" class="form-input" required>
+                        <small class="form-help">تاریخ درخواست شده برای ورود</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purpose" class="form-label">هدف از ورود</label>
+                        <textarea id="purpose" class="form-textarea" placeholder="لطفاً هدف از مراجعه خود را شرح دهید"
+                            required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline"
+                        onclick="closeModal('create-visit-modal')">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ثبت درخواست</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Visit Details Modal -->
+    <div id="visit-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">جزئیات درخواست</h3>
+                <button class="modal-close" onclick="closeModal('visit-details-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <ul class="info-list">
+                    <li class="info-item">
+                        <span class="info-label">شناسه:</span>
+                        <span class="info-value" id="detail-id"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">میزبان:</span>
+                        <span class="info-value" id="detail-host"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">تاریخ ورود:</span>
+                        <span class="info-value" id="detail-date"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">وضعیت:</span>
+                        <span class="info-value" id="detail-status"></span>
+                    </li>
+                    <li class="info-item">
+                        <span class="info-label">تاریخ ثبت:</span>
+                        <span class="info-value" id="detail-created"></span>
+                    </li>
+                </ul>
+
+                <div class="form-group">
+                    <label class="form-label">هدف از ورود:</label>
+                    <p id="detail-purpose" style="color: #5a6c7d;"></p>
+                </div>
+
+                <div id="detail-rejection"></div>
+                <div id="detail-pass"></div>
+                <div id="detail-history"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('visit-details-modal')">بستن</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/guest.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>
