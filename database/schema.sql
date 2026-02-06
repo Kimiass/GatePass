@@ -74,7 +74,7 @@ CREATE INDEX idx_passes_code ON passes(pass_code);
 CREATE INDEX idx_check_logs_visit ON check_logs(visit_id);
 CREATE INDEX idx_status_history_visit ON status_history(visit_id);
 
--- Insert default users (password for all: admin123)
+-- Insert default users (password for all: kimia1234)
 INSERT INTO users (name, email, phone, password_hash, role) VALUES 
 ('مدیر سیستم', 'admin@360gatepass.com', '09123456789', '$2b$10$adIfha6BjSV5v1oQsC5pjugGFjlbqgVxq3WH5HT3vOfqLzVx3T5Pu', 'admin'),
 ('نگهبان', 'security@360gatepass.com', '09123456788', '$2b$10$adIfha6BjSV5v1oQsC5pjugGFjlbqgVxq3WH5HT3vOfqLzVx3T5Pu', 'security'),
