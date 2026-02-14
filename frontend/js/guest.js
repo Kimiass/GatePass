@@ -157,6 +157,7 @@ async function viewVisitDetails(visitId) {
         const data = await apiCall(`/visits/${visitId}`);
         const visit = data.visit;
         const history = data.history || [];
+        const pass = data.pass || null;
 
         // Populate modal
         document.getElementById('detail-id').textContent = visit.id;
@@ -164,7 +165,7 @@ async function viewVisitDetails(visitId) {
         document.getElementById('detail-date').textContent = formatDate(visit.visit_date);
         document.getElementById('detail-status').innerHTML = `<span class="status-pill status-${visit.status}">${getStatusText(visit.status)}</span>`;
         document.getElementById('detail-purpose').textContent = visit.purpose;
-        document.getElementById('detail-created').textContent = formatDateTime(visit.created_at);
+        document.getElementById('detail-created').textContent = formatDateTimeIran(visit.created_at); // تغییر اینجا
 
         // Rejection reason
         const rejectionDiv = document.getElementById('detail-rejection');
@@ -178,22 +179,40 @@ async function viewVisitDetails(visitId) {
             rejectionDiv.innerHTML = '';
         }
 
-        // Pass code
         const passDiv = document.getElementById('detail-pass');
-        if (visit.status === 'approved' || visit.status === 'completed') {
-            // Try to get pass info
-            try {
-                const passData = await apiCall(`/visits/${visitId}`);
-                // This would need additional endpoint or include pass in visit details
-                passDiv.innerHTML = `
-                    <div class="pass-code-display">
-                        <div class="pass-code-label">کد مجوز شما</div>
-                        <div class="pass-code-value">در انتظار دریافت</div>
+        if (pass && pass.pass_code) {
+            const now = new Date();
+            const validUntil = new Date(pass.valid_until);
+            const isExpired = now > validUntil;
+
+            passDiv.innerHTML = `
+                <div class="pass-code-display" style="margin-top: 1.5rem;">
+                    <div class="pass-code-label">کد مجوز شما</div>
+                    <div class="pass-code-value">${pass.pass_code}</div>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <small style="color: ${isExpired ? '#d66d6d' : '#5a6c7d'};">
+                            ${isExpired
+                    ? '<i class="fa-solid fa-triangle-exclamation"></i> این مجوز منقضی شده است'
+                    : `<i class="fa-solid fa-circle-check"></i> معتبر تا ${formatDateTimeIran(pass.valid_until)}`  // تغییر اینجا
+                }
+                        </small>
                     </div>
-                `;
-            } catch {
-                passDiv.innerHTML = '';
-            }
+                    ${pass.is_used ? `
+                        <div style="margin-top: 0.5rem; text-align: center;">
+                            <small style="color: #86B0BD;">✓ این مجوز استفاده شده است</small>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="alert alert-info" style="margin-top: 1rem;">
+                    <strong>راهنما:</strong> این کد را هنگام ورود به حراست ارائه دهید.
+                </div>
+            `;
+        } else if (visit.status === 'approved' || visit.status === 'completed') {
+            passDiv.innerHTML = `
+                <div class="alert alert-warning" style="margin-top: 1.5rem;">
+                    <strong>توجه:</strong> درخواست شما تأیید شده است. مجوز ورود به زودی توسط حراست صادر خواهد شد.
+                </div>
+            `;
         } else {
             passDiv.innerHTML = '';
         }
@@ -202,14 +221,14 @@ async function viewVisitDetails(visitId) {
         const historyDiv = document.getElementById('detail-history');
         if (history.length > 0) {
             historyDiv.innerHTML = `
-                <h4 class="mb-2">تاریخچه وضعیت</h4>
+                <h4 class="mb-2" style="margin-top: 1.5rem;">تاریخچه وضعیت</h4>
                 <div class="timeline">
                     ${history.map(h => `
                         <div class="timeline-item">
                             <div class="timeline-marker"></div>
                             <div class="timeline-content">
                                 <div class="timeline-title">${getStatusText(h.new_status)}</div>
-                                <div class="timeline-time">${formatDateTime(h.changed_at)}</div>
+                                <div class="timeline-time">${formatDateTimeIran(h.changed_at)}</div>
                             </div>
                         </div>
                     `).join('')}
@@ -253,7 +272,7 @@ function clearFilters() {
 function setMinDate() {
     const dateInput = document.getElementById('visit-date');
     if (dateInput) {
-        dateInput.min = getTodayDate();
+        dateInput.setAttribute('data-min-date', getTodayDate());
     }
 }
 

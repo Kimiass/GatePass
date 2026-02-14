@@ -6,7 +6,7 @@ let reportData = null;
 // Load dashboard
 async function loadDashboard() {
     if (!requireAuth() || !hasRole('admin')) {
-        window.location.href = '/login.html';
+        window.location.href = '../index.html';
         return;
     }
 
@@ -125,15 +125,16 @@ async function loadReports(dateFrom = null, dateTo = null) {
 function renderReports() {
     if (!reportData) return;
 
-    // Update summary stats
-    document.getElementById('stat-total-visits').textContent = reportData.summary.total_visits || 0;
-    document.getElementById('stat-pending').textContent =
-        (reportData.summary.pending_host || 0) + (reportData.summary.pending_security || 0);
-    document.getElementById('stat-approved').textContent = reportData.summary.approved || 0;
-    document.getElementById('stat-rejected').textContent = reportData.summary.rejected || 0;
-    document.getElementById('stat-completed').textContent = reportData.summary.completed || 0;
+    const summary = reportData.summary;
 
-    // Render daily stats chart (simple table)
+    document.getElementById('stat-total-visits').textContent = summary.total_visits || 0;
+
+    const pendingHost = parseInt(summary.pending_host) || 0;
+    const pendingSecurity = parseInt(summary.pending_security) || 0;
+    document.getElementById('stat-pending').textContent = pendingHost + pendingSecurity;
+    document.getElementById('stat-approved').textContent = summary.approved || 0;
+    document.getElementById('stat-rejected').textContent = summary.rejected_by_host || 0;
+    document.getElementById('stat-completed').textContent = summary.completed || 0;
     const dailyStatsDiv = document.getElementById('daily-stats');
     if (reportData.daily_stats && reportData.daily_stats.length > 0) {
         dailyStatsDiv.innerHTML = `
@@ -159,8 +160,6 @@ function renderReports() {
                 </table>
             </div>
         `;
-    } else {
-        dailyStatsDiv.innerHTML = '<p class="text-center">داده‌ای برای نمایش وجود ندارد</p>';
     }
 
     // Render recent visits
@@ -193,8 +192,6 @@ function renderReports() {
                 </table>
             </div>
         `;
-    } else {
-        recentVisitsDiv.innerHTML = '<p class="text-center">داده‌ای برای نمایش وجود ندارد</p>';
     }
 }
 

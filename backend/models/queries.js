@@ -63,7 +63,11 @@ const createVisit = async (guestId, hostId, purpose, visitDate) => {
         await client.query(historyQuery, [visit.id, guestId]);
 
         await client.query('COMMIT');
-        return visit;
+        return {
+            visit,
+            created_at: visit.created_at.toISOString(),
+            updated_at: visit.updated_at.toISOString()
+        };
     } catch (error) {
         await client.query('ROLLBACK');
         throw error;

@@ -6,7 +6,8 @@ const {
     updateVisitStatus,
     getAllVisits,
     getHostUsers,
-    getStatusHistory
+    getStatusHistory,
+    getPassByVisitId
 } = require('../models/queries');
 
 const createVisitRequest = async (req, res) => {
@@ -102,9 +103,22 @@ const getVisitDetails = async (req, res) => {
         // Get status history (bonus feature)
         const history = await getStatusHistory(id);
 
+        // Get pass information if exists
+        let pass = null;
+        try {
+            if (visit.status === 'approved' || visit.status === 'completed') {
+                pass = await getPassByVisitId(id);
+            }
+        } catch (passError) {
+            console.error('Error fetching pass:', passError);
+            // Continue without pass if there's an error
+            pass = null;
+        }
+
         res.json({
             visit,
-            history
+            history,
+            pass
         });
     } catch (error) {
         console.error('Get visit details error:', error);
@@ -184,15 +198,14 @@ const getAllVisitsForSecurity = async (req, res) => {
         const { status, hostId, dateFrom, dateTo } = req.query;
 
         const filters = {};
-        if (status) filters.status = status;
+        if (status) {
+            filters.status = status;
+        } else {
+            filters.status = 'pending_security';
+        }
         if (hostId) filters.hostId = hostId;
         if (dateFrom) filters.dateFrom = dateFrom;
         if (dateTo) filters.dateTo = dateTo;
-
-        // Security can only see pending_security and approved visits
-        if (!status) {
-            filters.status = 'pending_security';
-        }
 
         const visits = await getAllVisits(filters);
 
