@@ -205,8 +205,24 @@ function applyReportFilters() {
 
 // Clear report filters
 function clearReportFilters() {
-    document.getElementById('report-date-from').value = '';
-    document.getElementById('report-date-to').value = '';
+    // Clear date inputs (both display and hidden)
+    const dateFromId = 'report-date-from';
+    const dateToId = 'report-date-to';
+
+    // Clear display inputs
+    const dateFromDisplay = document.getElementById(dateFromId + '_display');
+    const dateToDisplay = document.getElementById(dateToId + '_display');
+
+    if (dateFromDisplay) dateFromDisplay.value = '';
+    if (dateToDisplay) dateToDisplay.value = '';
+
+    // Clear hidden inputs
+    const dateFromHidden = document.getElementById(dateFromId);
+    const dateToHidden = document.getElementById(dateToId);
+
+    if (dateFromHidden) dateFromHidden.value = '';
+    if (dateToHidden) dateToHidden.value = '';
+
     loadReports();
 }
 

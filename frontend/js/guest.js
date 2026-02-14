@@ -262,9 +262,36 @@ function applyFilters() {
 
 // Clear filters
 function clearFilters() {
+    // Clear select
     document.getElementById('filter-status').value = '';
-    document.getElementById('filter-date-from').value = '';
-    document.getElementById('filter-date-to').value = '';
+
+    // Clear date inputs (both display and hidden inputs)
+    const dateFromId = 'filter-date-from';
+    const dateToId = 'filter-date-to';
+
+    // Clear display inputs (these have _display suffix added by datepicker)
+    const dateFromDisplay = document.getElementById(dateFromId + '_display');
+    const dateToDisplay = document.getElementById(dateToId + '_display');
+
+    if (dateFromDisplay) {
+        dateFromDisplay.value = '';
+    }
+    if (dateToDisplay) {
+        dateToDisplay.value = '';
+    }
+
+    // Clear hidden inputs (original IDs)
+    const dateFromHidden = document.getElementById(dateFromId);
+    const dateToHidden = document.getElementById(dateToId);
+
+    if (dateFromHidden) {
+        dateFromHidden.value = '';
+    }
+    if (dateToHidden) {
+        dateToHidden.value = '';
+    }
+
+    // Reload visits
     loadVisits();
 }
 

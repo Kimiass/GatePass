@@ -248,31 +248,42 @@ async function viewVisitDetails(visitId) {
     }
 }
 
-// Apply filters
-function applyFilters() {
-    const status = document.getElementById('filter-status').value;
-    const dateFrom = document.getElementById('filter-date-from').value;
-    const dateTo = document.getElementById('filter-date-to').value;
-
-    const filters = {};
-    if (status) filters.status = status;
-    if (dateFrom) filters.dateFrom = dateFrom;
-    if (dateTo) filters.dateTo = dateTo;
-
-    loadVisits(filters);
-}
-
-// Clear filters
-function clearFilters() {
-    document.getElementById('filter-status').value = '';
-    document.getElementById('filter-date-from').value = '';
-    document.getElementById('filter-date-to').value = '';
-    loadVisits();
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
     loadDashboard();
+
+    // Override clearFilters function
+    window.clearFilters = function() {
+        document.getElementById('filter-status').value = '';
+
+        const dateFromId = 'filter-date-from';
+        const dateToId = 'filter-date-to';
+
+        // Clear all possible variations
+        [dateFromId, dateFromId + '_display', dateToId, dateToId + '_display'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.value = '';
+            }
+        });
+
+        loadVisits();
+    };
+
+    // Override applyFilters too
+    window.applyFilters = function() {
+        const status = document.getElementById('filter-status').value;
+        const dateFrom = document.getElementById('filter-date-from').value;
+        const dateTo = document.getElementById('filter-date-to').value;
+
+        const filters = {};
+        if (status) filters.status = status;
+        if (dateFrom) filters.dateFrom = dateFrom;
+        if (dateTo) filters.dateTo = dateTo;
+
+        loadVisits(filters);
+    };
 
     const rejectForm = document.getElementById('reject-form');
     if (rejectForm) {
