@@ -5,7 +5,7 @@ const createUser = async (name, email, phone, passwordHash, role = 'guest') => {
     const query = `
         INSERT INTO users (name, email, phone, password_hash, role)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, name, email, phone, role, created_at
+            RETURNING id, name, email, phone, role, created_at
     `;
     const result = await pool.query(query, [name, email, phone, passwordHash, role]);
     return result.rows[0];
@@ -50,7 +50,7 @@ const createVisit = async (guestId, hostId, purpose, visitDate) => {
         const visitQuery = `
             INSERT INTO visits (guest_id, host_id, purpose, visit_date, status)
             VALUES ($1, $2, $3, $4, 'pending_host')
-            RETURNING *
+                RETURNING *
         `;
         const visitResult = await client.query(visitQuery, [guestId, hostId, purpose, visitDate]);
         const visit = visitResult.rows[0];
@@ -80,11 +80,17 @@ const getVisitsByGuest = async (guestId, filters = {}) => {
     let query = `
         SELECT v.*, h.name as host_name, h.email as host_email
         FROM visits v
-        LEFT JOIN users h ON v.host_id = h.id
+                 LEFT JOIN users h ON v.host_id = h.id
         WHERE v.guest_id = $1
     `;
     const params = [guestId];
     let paramCount = 1;
+
+    if (filters.hostId) {
+        paramCount++;
+        query += ` AND v.host_id = $${paramCount}`;
+        params.push(filters.hostId);
+    }
 
     if (filters.status) {
         paramCount++;
@@ -114,7 +120,7 @@ const getVisitsByHost = async (hostId, filters = {}) => {
     let query = `
         SELECT v.*, g.name as guest_name, g.email as guest_email, g.phone as guest_phone
         FROM visits v
-        LEFT JOIN users g ON v.guest_id = g.id
+                 LEFT JOIN users g ON v.guest_id = g.id
         WHERE v.host_id = $1
     `;
     const params = [hostId];
@@ -146,12 +152,12 @@ const getVisitsByHost = async (hostId, filters = {}) => {
 
 const getVisitById = async (visitId) => {
     const query = `
-        SELECT v.*, 
+        SELECT v.*,
                g.name as guest_name, g.email as guest_email, g.phone as guest_phone,
                h.name as host_name, h.email as host_email
         FROM visits v
-        LEFT JOIN users g ON v.guest_id = g.id
-        LEFT JOIN users h ON v.host_id = h.id
+                 LEFT JOIN users g ON v.guest_id = g.id
+                 LEFT JOIN users h ON v.host_id = h.id
         WHERE v.id = $1
     `;
     const result = await pool.query(query, [visitId]);
@@ -170,10 +176,10 @@ const updateVisitStatus = async (visitId, newStatus, changedBy, rejectionReason 
 
         // Update visit
         const updateQuery = `
-            UPDATE visits 
+            UPDATE visits
             SET status = $1, rejection_reason = $2
             WHERE id = $3
-            RETURNING *
+                RETURNING *
         `;
         const updateResult = await client.query(updateQuery, [newStatus, rejectionReason, visitId]);
 
@@ -196,12 +202,12 @@ const updateVisitStatus = async (visitId, newStatus, changedBy, rejectionReason 
 
 const getAllVisits = async (filters = {}) => {
     let query = `
-        SELECT v.*, 
+        SELECT v.*,
                g.name as guest_name, g.email as guest_email,
                h.name as host_name, h.email as host_email
         FROM visits v
-        LEFT JOIN users g ON v.guest_id = g.id
-        LEFT JOIN users h ON v.host_id = h.id
+                 LEFT JOIN users g ON v.guest_id = g.id
+                 LEFT JOIN users h ON v.host_id = h.id
         WHERE 1=1
     `;
     const params = [];
@@ -242,7 +248,7 @@ const createPass = async (visitId, passCode, issuedBy, validFrom, validUntil) =>
     const query = `
         INSERT INTO passes (visit_id, pass_code, issued_by, valid_from, valid_until)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
+            RETURNING *
     `;
     const result = await pool.query(query, [visitId, passCode, issuedBy, validFrom, validUntil]);
     return result.rows[0];
@@ -253,8 +259,8 @@ const getPassByCode = async (passCode) => {
         SELECT p.*, v.guest_id, v.visit_date, v.purpose,
                g.name as guest_name, g.phone as guest_phone
         FROM passes p
-        JOIN visits v ON p.visit_id = v.id
-        JOIN users g ON v.guest_id = g.id
+                 JOIN visits v ON p.visit_id = v.id
+                 JOIN users g ON v.guest_id = g.id
         WHERE p.pass_code = $1
     `;
     const result = await pool.query(query, [passCode]);
@@ -278,7 +284,7 @@ const createCheckLog = async (passId, visitId, logType, loggedBy) => {
     const query = `
         INSERT INTO check_logs (pass_id, visit_id, log_type, logged_by)
         VALUES ($1, $2, $3, $4)
-        RETURNING *
+            RETURNING *
     `;
     const result = await pool.query(query, [passId, visitId, logType, loggedBy]);
     return result.rows[0];
@@ -288,7 +294,7 @@ const getCheckLogsByVisit = async (visitId) => {
     const query = `
         SELECT cl.*, u.name as logged_by_name
         FROM check_logs cl
-        LEFT JOIN users u ON cl.logged_by = u.id
+                 LEFT JOIN users u ON cl.logged_by = u.id
         WHERE cl.visit_id = $1
         ORDER BY cl.logged_at DESC
     `;
@@ -299,17 +305,17 @@ const getCheckLogsByVisit = async (visitId) => {
 const getPresentVisitors = async () => {
     const query = `
         SELECT DISTINCT ON (v.id)
-               v.id, v.purpose, v.visit_date,
-               g.name as guest_name, g.phone as guest_phone,
-               h.name as host_name,
-               p.pass_code,
-               ci.logged_at as checked_in_at
+            v.id, v.purpose, v.visit_date,
+            g.name as guest_name, g.phone as guest_phone,
+            h.name as host_name,
+            p.pass_code,
+            ci.logged_at as checked_in_at
         FROM visits v
-        JOIN users g ON v.guest_id = g.id
-        JOIN users h ON v.host_id = h.id
-        JOIN passes p ON p.visit_id = v.id
-        JOIN check_logs ci ON ci.visit_id = v.id AND ci.log_type = 'check_in'
-        LEFT JOIN check_logs co ON co.visit_id = v.id AND co.log_type = 'check_out' AND co.logged_at > ci.logged_at
+            JOIN users g ON v.guest_id = g.id
+            JOIN users h ON v.host_id = h.id
+            JOIN passes p ON p.visit_id = v.id
+            JOIN check_logs ci ON ci.visit_id = v.id AND ci.log_type = 'check_in'
+            LEFT JOIN check_logs co ON co.visit_id = v.id AND co.log_type = 'check_out' AND co.logged_at > ci.logged_at
         WHERE co.id IS NULL
         ORDER BY v.id, ci.logged_at DESC
     `;
@@ -322,7 +328,7 @@ const getStatusHistory = async (visitId) => {
     const query = `
         SELECT sh.*, u.name as changed_by_name
         FROM status_history sh
-        LEFT JOIN users u ON sh.changed_by = u.id
+                 LEFT JOIN users u ON sh.changed_by = u.id
         WHERE sh.visit_id = $1
         ORDER BY sh.changed_at ASC
     `;
@@ -333,7 +339,7 @@ const getStatusHistory = async (visitId) => {
 // Report queries
 const getVisitStatistics = async (dateFrom, dateTo) => {
     const query = `
-        SELECT 
+        SELECT
             COUNT(*) as total_visits,
             COUNT(CASE WHEN status = 'pending_host' THEN 1 END) as pending_host,
             COUNT(CASE WHEN status = 'pending_security' THEN 1 END) as pending_security,
@@ -349,7 +355,7 @@ const getVisitStatistics = async (dateFrom, dateTo) => {
 
 const getDailyVisitStats = async (days = 7) => {
     const query = `
-        SELECT 
+        SELECT
             DATE(visit_date) as date,
             COUNT(*) as total_requests,
             COUNT(CASE WHEN status IN ('approved', 'completed') THEN 1 END) as approved_requests

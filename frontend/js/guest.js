@@ -30,6 +30,7 @@ async function loadHosts() {
         const data = await apiCall('/visits/hosts');
         hosts = data.hosts;
 
+        // Populate host select in create modal
         const select = document.getElementById('host-select');
         select.innerHTML = '<option value="">انتخاب میزبان...</option>';
 
@@ -39,6 +40,18 @@ async function loadHosts() {
             option.textContent = `${host.name} (${host.email})`;
             select.appendChild(option);
         });
+
+        // Populate host filter dropdown
+        const filterSelect = document.getElementById('filter-host');
+        if (filterSelect) {
+            filterSelect.innerHTML = '<option value="">همه</option>';
+            hosts.forEach(host => {
+                const option = document.createElement('option');
+                option.value = host.id;
+                option.textContent = host.name;
+                filterSelect.appendChild(option);
+            });
+        }
     } catch (error) {
         showAlert('خطا در دریافت لیست میزبان‌ها', 'danger');
     }
@@ -49,6 +62,7 @@ async function loadVisits(filters = {}) {
     showLoading();
     try {
         const queryParams = new URLSearchParams();
+        if (filters.hostId) queryParams.append('hostId', filters.hostId);
         if (filters.status) queryParams.append('status', filters.status);
         if (filters.dateFrom) queryParams.append('dateFrom', filters.dateFrom);
         if (filters.dateTo) queryParams.append('dateTo', filters.dateTo);
@@ -192,9 +206,9 @@ async function viewVisitDetails(visitId) {
                     <div style="margin-top: 1rem; text-align: center;">
                         <small style="color: ${isExpired ? '#d66d6d' : '#5a6c7d'};">
                             ${isExpired
-                    ? '<i class="fa-solid fa-triangle-exclamation"></i> این مجوز منقضی شده است'
-                    : `<i class="fa-solid fa-circle-check"></i> معتبر تا ${formatDateTimeIran(pass.valid_until)}`  // تغییر اینجا
-                }
+                ? '<i class="fa-solid fa-triangle-exclamation"></i> این مجوز منقضی شده است'
+                : `<i class="fa-solid fa-circle-check"></i> معتبر تا ${formatDateTimeIran(pass.valid_until)}`  // تغییر اینجا
+            }
                         </small>
                     </div>
                     ${pass.is_used ? `
@@ -248,11 +262,13 @@ async function viewVisitDetails(visitId) {
 
 // Apply filters
 function applyFilters() {
+    const hostId = document.getElementById('filter-host').value;
     const status = document.getElementById('filter-status').value;
     const dateFrom = document.getElementById('filter-date-from').value;
     const dateTo = document.getElementById('filter-date-to').value;
 
     const filters = {};
+    if (hostId) filters.hostId = hostId;
     if (status) filters.status = status;
     if (dateFrom) filters.dateFrom = dateFrom;
     if (dateTo) filters.dateTo = dateTo;
@@ -262,7 +278,8 @@ function applyFilters() {
 
 // Clear filters
 function clearFilters() {
-    // Clear select
+    // Clear select filters
+    document.getElementById('filter-host').value = '';
     document.getElementById('filter-status').value = '';
 
     // Clear date inputs (both display and hidden inputs)

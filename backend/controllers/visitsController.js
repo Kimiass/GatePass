@@ -44,10 +44,11 @@ const createVisitRequest = async (req, res) => {
 const getMyVisits = async (req, res) => {
     try {
         const guestId = req.user.userId;
-        const { status, dateFrom, dateTo } = req.query;
+        const { status, hostId, dateFrom, dateTo } = req.query;
 
         const filters = {};
         if (status) filters.status = status;
+        if (hostId) filters.hostId = hostId;
         if (dateFrom) filters.dateFrom = dateFrom;
         if (dateTo) filters.dateTo = dateTo;
 
